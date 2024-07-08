@@ -1,11 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import { Platform, SafeAreaView, StyleSheet, Text,TouchableOpacity, View,Image,Button, Alert,ImageBackground,TextInput,ScrollView,Modal, FlatList} from 'react-native';
+import { Platform, SafeAreaView, StyleSheet, Text,TouchableOpacity, View,Image,Button, Alert,ImageBackground,TextInput,ScrollView,Modal, FlatList, ActivityIndicator, Dimensions} from 'react-native';
 import * as Font from 'expo-font';
 import { useRouter } from 'expo-router';
 import React,{useState,useEffect} from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons.js';
 import axios from 'axios';
+
+import { WebView } from 'react-native-webview';
+//import { useNavigation } from '@react-navigation/native';
 
 
 const getFonts = () => {
@@ -16,7 +19,8 @@ const getFonts = () => {
 const stack = createNativeStackNavigator();
 
 export default function App() {
-  
+ 
+//var navigation = useNavigation();
   const img1 = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Timothy_Ferriss.jpg/330px-Timothy_Ferriss.jpg';
   const getFonts = () => {
     return Font.loadAsync({
@@ -25,15 +29,28 @@ export default function App() {
   }
   
   const router = useRouter();
-  useEffect(() => {})
-   const options = {
-      method:'GET',
-      headers:{
-      'X-RapidAPI-Key':'',
-      'X-RapidAPI-Host':'',
-     }
-    };
+  const [data,setData] = useState([]);
+  const[query,setQuery] = useState("");
+//const [isLoading,setLoading] = useState(false);
+const myAPI = async (query) =>{
+  try{
+  const url = `http://10.1.105.115:5000/mental-health?type=${query}&sub_key=deezNUTZballz6969420`;
+  let result = await fetch(url)
+  let json = await result.json();
+  console.log(json.mental_health_data);
+  setData(json.mental_health_data);
   
+  //setLoading(false);
+  }
+  catch(error){
+    console.log(error);
+  }
+};
+useEffect(()=>{
+  
+  myAPI();
+},[]);
+ const [help,setHelp] = useState(false);
  const[post,setPost] = useState([]);
  const[username,setUsername] = useState("");
  const[password,setPassword] = useState("");
@@ -43,7 +60,7 @@ export default function App() {
     setUsername("");
     setPassword("");
   }
-  const fetchData = async() => {
+ /* const fetchData = async() => {
     const response = await fetch(`https://jsonplaceholder.typicode.com/posts?_limit=10`);
     const data = await response.json();
     setPost(data);
@@ -51,17 +68,25 @@ export default function App() {
   useEffect(() => {
     fetchData();
   }, []);
-
+  */
     function loginSubmit  (){
       const userData = {
-        
+        username:username,
         password:password,
+        
       };
-      axios.post('http://192.168.1.9:3050/register',userData)
+      axios.post('http://10.1.105.115:6090/login',userData)
       .then((res)=>{console.log(res.data)})
       .catch((e)=>{console.log(e)});
     }
-
+   /* if(isLoading){
+      return(
+        <View style={{flex:1,justifyContent:"center",alignItems:"center"}}>
+        <ActivityIndicator size={"large"} color={"#000000"}></ActivityIndicator>
+        </View>
+      )
+    }
+  */
   return (
     
     
@@ -78,11 +103,28 @@ export default function App() {
       </View>
       </ImageBackground>
       <View style={{paddingTop:10}}>
+      
+        <TextInput style={styles.input} placeholder='Search ..' placeholderTextColor={"white"} onChangeText={(text)=>{myAPI(text)}} onEndEditing={()=>setHelp(true)}  /> 
         
-        <TextInput style={styles.input} placeholder='Search Anime...' placeholderTextColor='white'  >  </TextInput>
+        <View style={{paddingTop:15,paddingBottom:15,alignItems:'center'}}>
+      <Button title="Look For Help" color={"brown"} onPress={() =>setHelp(true)} />
+      </View>
+      <Modal visible={help} onRequestClose={() => setHelp(false)} animationType='slide'>
+        
+        <FlatList data={data} renderItem={({item})=> <View style={styles.container}>
+        <Text style={{fontSize:20,color:'white',justifyContent:'center'}}>{item.content}</Text>
+        <Text style={{fontSize:20,color:'white',justifyContent:'center'}}>{item.title}</Text>
+          <Text style={{fontSize:20,color:'white',justifyContent:'center'}}>{item.type}</Text>
+          {item.url.includes('youtube.com') ? (<WebView style={styles.webview}  javaScriptEnabled={true} domStorageEnabled={true} originWhitelist={`${item.url}`} source={{uri : item.url}}/>)
+           :(<WebView style={styles.webview} domStorageEnabled={true} javaScriptEnabled={true} source={{uri:item.url}} originWhitelist={`${item.url}`} />)
+           }
+          
+        </View> } />
+      </Modal>
+         
         
       </View>
-      <View style={{paddingTop:15,paddingBottom:15,alignItems:'center'}}>
+      <View style={{paddingTop:-2,paddingBottom:15,alignItems:'center'}}>
       <Button title="LOGIN" onPress={() => setnotif(true)} />
       </View>
       <Modal visible={notif} onRequestClose={() => setnotif(false)} animationType='slide' >
@@ -91,14 +133,15 @@ export default function App() {
           <ImageBackground source={{uri:'https://rkginstitute.com/wp-content/uploads/2022/03/image-9.png'}} style={{opacity:1.5}} >
           <View style={styles.form}>
             <Text style={styles.inp}>Username</Text>
-            <TextInput placeholder='Enter your Username' style={styles.input1} placeholderTextColor='black'  ></TextInput>
+            <TextInput placeholder='Enter your Username' style={styles.input1} placeholderTextColor='black' onPress={loginSubmit} onChangeText={(text)=>{setUsername(text)}} value={username} ></TextInput>
             <Text style={styles.inp} >Password</Text>
-            <TextInput placeholder='Enter Password' icon="Anime" secureTextEntry style={styles.input1} placeholderTextColor='black' />
+            <TextInput placeholder='Enter Password' icon="Anime" secureTextEntry style={styles.input1} onPress={loginSubmit} onChangeText={(txt)=>{setPassword(txt)}} placeholderTextColor='black' />
             <View style={{paddingTop:20}} >
             <Button title="Login" style={styles.input} color="midnightblue" onPress={()=>{loginSubmit()}} />
             </View>
           </View>
           </ImageBackground>
+          <Button  title="Go Back" color="black" onPress={()=>{setModalVisible(false)}}/>
         </View>
         
       </Modal>
@@ -155,6 +198,7 @@ export default function App() {
 “There is nothing noble in being superior to your fellow man; true nobility is being superior to your former self.” - ...
 “Stay afraid, but do it anyway. ...
 “One can choose to go back toward safety or forward toward growth.</Text>
+      
         </View>
         </View>
     
@@ -171,8 +215,13 @@ export default function App() {
             <Text style={{alignSelf:'flex-start',fontSize:30,color:'white',paddingBottom:25,fontWeight:'800'}}>Blogs</Text>
             <Text style={{color:'white'}}>Personality development is the continuous advancement of character as far as trademark enthusiastic reactions or disposition, a conspicuous style of life, individual jobs and job practices, a bunch of qualities and objectives, average examples of change, trademark relational relations and other connections, trademark attributes, and a somewhat fixed mental self view.
             </Text>
-            <Button title="Back" color="black" onPress={() => setModalVisible(false)} />
-            <FlatList style={{backgroundColor:'black'}} ></FlatList>
+            <Button title="Back" color="black" onPress={() => {myAPI("blog");setModalVisible(false)}} />
+            
+          </View>
+          <View style={styles.container}>
+            <FlatList data={data} renderItem={({item}) => <View>
+            {item.type.includes('blog')?(<WebView source={{uri: item.url}} domStorageEnabled={true} javaScriptEnabled={true} originWhitelist={item.url} ></WebView>):(<View><Text style={{color:'white'}}>{item.content}</Text></View>)}
+            </View>} />
           </View>
           
           
@@ -285,7 +334,11 @@ const styles = StyleSheet.create({
       marginLeft:10,
       
     },
-
+    webview:{
+      width:Dimensions.get('window').width - 20,
+      height:800,
+      marginTop:10,
+    }
       
      
   
