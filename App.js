@@ -5,6 +5,7 @@ import * as Font from 'expo-font';
 import { useRouter } from 'expo-router';
 import React,{useState,useEffect} from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons.js';
+import axios from 'axios';
 
 
 const getFonts = () => {
@@ -51,6 +52,15 @@ export default function App() {
     fetchData();
   }, []);
 
+    function loginSubmit  (){
+      const userData = {
+        
+        password:password,
+      };
+      axios.post('http://192.168.1.9:3050/register',userData)
+      .then((res)=>{console.log(res.data)})
+      .catch((e)=>{console.log(e)});
+    }
 
   return (
     
@@ -81,11 +91,11 @@ export default function App() {
           <ImageBackground source={{uri:'https://rkginstitute.com/wp-content/uploads/2022/03/image-9.png'}} style={{opacity:1.5}} >
           <View style={styles.form}>
             <Text style={styles.inp}>Username</Text>
-            <TextInput placeholder='Enter your Username' style={styles.input1} placeholderTextColor='black' ></TextInput>
+            <TextInput placeholder='Enter your Username' style={styles.input1} placeholderTextColor='black'  ></TextInput>
             <Text style={styles.inp} >Password</Text>
-            <TextInput placeholder='Enter Password' secureTextEntry style={styles.input1} placeholderTextColor='black' />
+            <TextInput placeholder='Enter Password' icon="Anime" secureTextEntry style={styles.input1} placeholderTextColor='black' />
             <View style={{paddingTop:20}} >
-            <Button title="Login" style={styles.input} color="midnightblue" onPress={() => {setUsername("");setPassword("");}} />
+            <Button title="Login" style={styles.input} color="midnightblue" onPress={()=>{loginSubmit()}} />
             </View>
           </View>
           </ImageBackground>
