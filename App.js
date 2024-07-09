@@ -34,7 +34,7 @@ export default function App() {
 //const [isLoading,setLoading] = useState(false);
 const myAPI = async (query) =>{
   try{
-  const url = `http://192.168.1.13:5000/mental-health?type=${query}&sub_key=deezNUTZballz6969420`;
+  const url = `http://0.0.0.0:5000/mental-health?type=${query}&sub_key=INSERTapiKEY`;
   let result = await fetch(url)
   let json = await result.json();
   console.log(json.mental_health_data);
@@ -75,7 +75,7 @@ useEffect(()=>{
         password:password,
         
       };
-      axios.post('http://10.1.105.115:6090/login',userData)
+      axios.post('http://0.0.0.0:6090/login',userData)
       .then((res)=>{console.log(res.data)})
       .catch((e)=>{console.log(e)});
     }
